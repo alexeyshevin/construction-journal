@@ -1,122 +1,147 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import type { CreateWorkLogDto, WorkLogDto } from '@construction/contracts';
+import AddIcon from '@mui/icons-material/Add';
+import RefreshIcon from '@mui/icons-material/Refresh';
+import {
+  Alert,
+  Box,
+  Button,
+  Container,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Paper,
+  Select,
+  Stack,
+  TextField,
+  Typography,
+} from '@mui/material';
+import { useEffect, useState } from 'react';
+import { WorkLogFormDialog } from './components/WorkLogFormDialog';
+import { WorkLogsTable } from './components/WorkLogsTable';
+import { useWorkLogsStore } from './store/workLogsStore';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const {
+    workLogs,
+    workTypes,
+    filters,
+    isLoading,
+    error,
+    setFilters,
+    fetchInitialData,
+    fetchWorkLogs,
+    createLog,
+    updateLog,
+    deleteLog,
+  } = useWorkLogsStore();
 
-  return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+const [isDialogOpen, setDialogOpen] = useState(false);
+  const [editingLog, setEditingLog] = useState<WorkLogDto | null>(null);
 
-      <div className="ticks"></div>
+  useEffect(() => {
+    void fetchInitialData();
+  }, [fetchInitialData]);
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+  const openCreateDialog = () => {
+    setEditingLog(null);
+    setDialogOpen(true);
+  };
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+  const openEditDialog = (item: WorkLogDto) => {
+    setEditingLog(item);
+    setDialogOpen(true);
+  };
+
+  const handleSubmit = async (dto: CreateWorkLogDto) => {
+    if (editingLog) {
+      await updateLog(editingLog.id, dto);
+    } else {
+      await createLog(dto);
+    }
+  };
+
+const handleDelete = async (id: string) => {
+    const confirmed = window.confirm('Удалить запись журнала?');
+
+    if (confirmed) {
+      await deleteLog(id);
+    }
+  };
+
+  const applyFilters = async () => {
+    await fetchWorkLogs();
+  };
+
+return (
+    <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Stack spacing={3}>
+        <Box>
+          <Typography variant="h4" fontWeight={700} gutterBottom>
+            Журнал работ
+          </Typography>
+          <Typography color="text.secondary">
+            Учет выполненных работ на строительном объекте
+          </Typography>
+        </Box>
+
+        <Paper sx={{ p: 2 }}>
+          <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} alignItems={{ md: 'center' }}>
+            <TextField
+              label="Дата с"
+              type="date"
+              size="small"
+              InputLabelProps={{ shrink: true }}
+              value={filters.dateFrom ?? ''}
+              onChange={(event) => setFilters({ ...filters, dateFrom: event.target.value || undefined })}
+            />
+
+            <TextField
+              label="Дата по"
+              type="date"
+              size="small"
+              InputLabelProps={{ shrink: true }}
+              value={filters.dateTo ?? ''}
+              onChange={(event) => setFilters({ ...filters, dateTo: event.target.value || undefined })}
+            />
+
+            <FormControl size="small" sx={{ minWidth: 180 }}>
+              <InputLabel>Сортировка</InputLabel>
+              <Select
+                label="Сортировка"
+                value={filters.sort ?? 'desc'}
+                onChange={(event) => setFilters({ ...filters, sort: event.target.value as 'asc' | 'desc' })}
+              >
+                <MenuItem value="desc">Сначала новые</MenuItem>
+                <MenuItem value="asc">Сначала старые</MenuItem>
+              </Select>
+            </FormControl>
+
+            <Button variant="outlined" startIcon={<RefreshIcon />} onClick={applyFilters} disabled={isLoading}>
+              Применить
+            </Button>
+
+            <Box sx={{ flexGrow: 1 }} />
+
+            <Button variant="contained" startIcon={<AddIcon />} onClick={openCreateDialog}>
+              Добавить запись
+            </Button>
+          </Stack>
+        </Paper>
+
+        {error && <Alert severity="error">{error}</Alert>}
+
+        <WorkLogsTable items={workLogs} onEdit={openEditDialog} onDelete={handleDelete} />
+      </Stack>
+
+      <WorkLogFormDialog
+        open={isDialogOpen}
+        workTypes={workTypes}
+        editingLog={editingLog}
+        onClose={() => setDialogOpen(false)}
+        onSubmit={handleSubmit}
+      />
+    </Container>
+  );
 }
 
-export default App
+export default App;
