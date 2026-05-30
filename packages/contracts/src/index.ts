@@ -36,6 +36,8 @@ export const WorkLogsQuerySchema = z.object({
 
 export type WorkTypeDto = z.infer<typeof WorkTypeSchema>;
 export type WorkLogDto = z.infer<typeof WorkLogSchema>;
-export type CreateWorkLogDto = z.infer<typeof CreateWorkLogSchema>;
-export type UpdateWorkLogDto = z.infer<typeof UpdateWorkLogSchema>;
 export type WorkLogsQueryDto = z.infer<typeof WorkLogsQuerySchema>;
+export type CreateWorkLogFormValues = z.input<typeof CreateWorkLogSchema>;
+export type CreateWorkLogDto = z.output<typeof CreateWorkLogSchema>;
+export type UpdateWorkLogFormValues = z.input<typeof UpdateWorkLogSchema>;
+export type UpdateWorkLogDto = z.output<typeof UpdateWorkLogSchema>;

@@ -1,18 +1,23 @@
-import type { CreateWorkLogDto, WorkLogDto, WorkTypeDto } from '@construction/contracts';
+import type {
+  CreateWorkLogDto,
+  CreateWorkLogFormValues,
+  WorkLogDto,
+  WorkTypeDto,
+} from '@construction/contracts';
 import { CreateWorkLogSchema } from '@construction/contracts';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
-    Button,
-    Dialog,
-    DialogActions,
-    DialogContent,
-    DialogTitle,
-    FormControl,
-    InputLabel,
-    MenuItem,
-    Select,
-    Stack,
-    TextField,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  Stack,
+  TextField,
 } from '@mui/material';
 import dayjs from 'dayjs';
 import { useEffect } from 'react';
@@ -26,7 +31,7 @@ type Props = {
   onSubmit: (dto: CreateWorkLogDto) => Promise<void>;
 };
 
-export function WorkLogFormDialog({ open, workTypes, editingLog, onClose, onSubmit }: Props) {
+export const WorkLogFormDialog = (props: Props) => {
   const {
     register,
     handleSubmit,
@@ -34,7 +39,7 @@ export function WorkLogFormDialog({ open, workTypes, editingLog, onClose, onSubm
     control,
     setValue,
     formState: { errors, isSubmitting },
-  } = useForm<CreateWorkLogDto>({
+  } = useForm<CreateWorkLogFormValues, unknown, CreateWorkLogDto>({
     resolver: zodResolver(CreateWorkLogSchema),
     defaultValues: {
       workDate: dayjs().format('YYYY-MM-DD'),
@@ -46,13 +51,13 @@ export function WorkLogFormDialog({ open, workTypes, editingLog, onClose, onSubm
   });
 
   useEffect(() => {
-    if (editingLog) {
+    if (props.editingLog) {
       reset({
-        workDate: dayjs(editingLog.workDate).format('YYYY-MM-DD'),
-        workTypeId: editingLog.workTypeId,
-        amount: editingLog.amount,
-        unit: editingLog.unit,
-        performerName: editingLog.performerName,
+        workDate: dayjs(props.editingLog.workDate).format('YYYY-MM-DD'),
+        workTypeId: props.editingLog.workTypeId,
+        amount: props.editingLog.amount,
+        unit: props.editingLog.unit,
+        performerName: props.editingLog.performerName,
       });
     } else {
       reset({
@@ -63,10 +68,10 @@ export function WorkLogFormDialog({ open, workTypes, editingLog, onClose, onSubm
         performerName: '',
       });
     }
-  }, [editingLog, open, reset]);
+  }, [props.editingLog, props.open, reset]);
 
   const handleWorkTypeChange = (workTypeId: string) => {
-    const selected = workTypes.find((item) => item.id === workTypeId);
+    const selected = props.workTypes.find((item) => item.id === workTypeId);
     setValue('workTypeId', workTypeId, { shouldValidate: true });
 
     if (selected) {
@@ -75,20 +80,28 @@ export function WorkLogFormDialog({ open, workTypes, editingLog, onClose, onSubm
   };
 
   const submit = handleSubmit(async (dto) => {
-    await onSubmit(dto);
-    onClose();
+    await props.onSubmit(dto);
+    props.onClose();
   });
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-      <DialogTitle>{editingLog ? 'Редактировать запись' : 'Добавить запись'}</DialogTitle>
+    <Dialog open={props.open} onClose={props.onClose} fullWidth maxWidth="sm">
+      <DialogTitle>
+        {
+          props.editingLog ?
+            'Редактировать запись' :
+            'Добавить запись'
+        }
+      </DialogTitle>
 
       <DialogContent>
         <Stack component="form" spacing={2.5} sx={{ mt: 1 }} onSubmit={submit}>
           <TextField
             label="Дата выполнения"
             type="date"
-            InputLabelProps={{ shrink: true }}
+            slotProps={{
+              inputLabel: { shrink: true },
+            }}
             error={Boolean(errors.workDate)}
             helperText={errors.workDate?.message}
             {...register('workDate')}
@@ -105,7 +118,7 @@ export function WorkLogFormDialog({ open, workTypes, editingLog, onClose, onSubm
                   value={field.value}
                   onChange={(event) => handleWorkTypeChange(event.target.value)}
                 >
-                  {workTypes.map((workType) => (
+                  {props.workTypes.map((workType) => (
                     <MenuItem key={workType.id} value={workType.id}>
                       {workType.name}
                     </MenuItem>
@@ -117,7 +130,9 @@ export function WorkLogFormDialog({ open, workTypes, editingLog, onClose, onSubm
           <TextField
             label="Объем"
             type="number"
-            inputProps={{ step: '0.01' }}
+            slotProps={{
+              htmlInput: { step: '0.01' },
+            }}
             error={Boolean(errors.amount)}
             helperText={errors.amount?.message}
             {...register('amount', { valueAsNumber: true })}
@@ -140,9 +155,9 @@ export function WorkLogFormDialog({ open, workTypes, editingLog, onClose, onSubm
       </DialogContent>
 
       <DialogActions>
-        <Button onClick={onClose}>Отмена</Button>
+        <Button onClick={props.onClose}>Отмена</Button>
         <Button onClick={submit} variant="contained" disabled={isSubmitting}>
-          {editingLog ? 'Сохранить' : 'Добавить'}
+          {props.editingLog ? 'Сохранить' : 'Добавить'}
         </Button>
       </DialogActions>
     </Dialog>

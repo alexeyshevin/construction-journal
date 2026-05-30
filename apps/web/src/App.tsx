@@ -18,7 +18,7 @@ import {
 import { useEffect, useState } from 'react';
 import { WorkLogFormDialog } from './components/WorkLogFormDialog';
 import { WorkLogsTable } from './components/WorkLogsTable';
-import { useWorkLogsStore } from './store/workLogsStore';
+import { useWorkLogsStore } from './store/useWorkLogsStore';
 
 function App() {
   const {
@@ -76,7 +76,7 @@ return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       <Stack spacing={3}>
         <Box>
-          <Typography variant="h4" fontWeight={700} gutterBottom>
+          <Typography variant="h4" sx={{ fontWeight: 700 }} gutterBottom>
             Журнал работ
           </Typography>
           <Typography color="text.secondary">
@@ -85,12 +85,14 @@ return (
         </Box>
 
         <Paper sx={{ p: 2 }}>
-          <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} alignItems={{ md: 'center' }}>
+          <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} sx={{ alignItems: { md: 'center' } }}>
             <TextField
               label="Дата с"
               type="date"
               size="small"
-              InputLabelProps={{ shrink: true }}
+              slotProps={{
+                inputLabel: { shrink: true },
+              }}
               value={filters.dateFrom ?? ''}
               onChange={(event) => setFilters({ ...filters, dateFrom: event.target.value || undefined })}
             />
@@ -99,7 +101,9 @@ return (
               label="Дата по"
               type="date"
               size="small"
-              InputLabelProps={{ shrink: true }}
+              slotProps={{
+                inputLabel: { shrink: true },
+              }}
               value={filters.dateTo ?? ''}
               onChange={(event) => setFilters({ ...filters, dateTo: event.target.value || undefined })}
             />

@@ -17,7 +17,7 @@ type WorkLogsState = {
   deleteLog: (id: string) => Promise<void>;
 };
 
-export const workLogsStore = create<WorkLogsState>((set, get) => ({
+export const useWorkLogsStore = create<WorkLogsState>((set, get) => ({
   workLogs: [],
   workTypes: [],
   filters: {

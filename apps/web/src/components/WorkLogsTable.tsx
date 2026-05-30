@@ -2,16 +2,16 @@ import type { WorkLogDto } from '@construction/contracts';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import {
-    IconButton,
-    Paper,
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TableRow,
-    Tooltip,
-    Typography,
+  IconButton,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Tooltip,
+  Typography,
 } from '@mui/material';
 import dayjs from 'dayjs';
 
@@ -21,8 +21,8 @@ type Props = {
   onDelete: (id: string) => void;
 };
 
-export function WorkLogsTable({ items, onEdit, onDelete }: Props) {
-  if (items.length === 0) {
+export const WorkLogsTable = (props: Props) => {
+  if (props.items.length === 0) {
     return (
       <Paper sx={{ p: 4, textAlign: 'center' }}>
         <Typography color="text.secondary">Записей пока нет</Typography>
@@ -44,7 +44,7 @@ export function WorkLogsTable({ items, onEdit, onDelete }: Props) {
         </TableHead>
 
         <TableBody>
-          {items.map((item) => (
+          {props.items.map((item) => (
             <TableRow key={item.id} hover>
               <TableCell>{dayjs(item.workDate).format('DD.MM.YYYY')}</TableCell>
               <TableCell>{item.workType.name}</TableCell>
@@ -54,13 +54,13 @@ export function WorkLogsTable({ items, onEdit, onDelete }: Props) {
               <TableCell>{item.performerName}</TableCell>
               <TableCell align="right">
                 <Tooltip title="Редактировать">
-                  <IconButton onClick={() => onEdit(item)}>
+                  <IconButton onClick={() => props.onEdit(item)}>
                     <EditIcon />
                   </IconButton>
                 </Tooltip>
 
                 <Tooltip title="Удалить">
-                  <IconButton color="error" onClick={() => onDelete(item.id)}>
+                  <IconButton color="error" onClick={() => props.onDelete(item.id)}>
                     <DeleteIcon />
                   </IconButton>
                 </Tooltip>
