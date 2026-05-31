@@ -1,4 +1,6 @@
+import { WorkLogsQueryDto } from '@construction/contracts';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateWorkLogDto } from './dto/create-work-log.dto';
 import { UpdateWorkLogDto } from './dto/update-work-log.dto';
@@ -7,7 +9,7 @@ import { UpdateWorkLogDto } from './dto/update-work-log.dto';
 export class WorkLogsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAll(params: FindAllParams) {
+  async findAll(params: WorkLogsQueryDto) {
     const where: Prisma.WorkLogWhereInput = {};
 
     if (params.dateFrom || params.dateTo) {
