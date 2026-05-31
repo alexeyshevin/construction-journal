@@ -20,7 +20,7 @@ import { WorkLogFormDialog } from './components/WorkLogFormDialog';
 import { WorkLogsTable } from './components/WorkLogsTable';
 import { useWorkLogsStore } from './store/useWorkLogsStore';
 
-function App() {
+const App = () => {
   const {
     workLogs,
     workTypes,
@@ -35,7 +35,7 @@ function App() {
     deleteLog,
   } = useWorkLogsStore();
 
-const [isDialogOpen, setDialogOpen] = useState(false);
+  const [isDialogOpen, setDialogOpen] = useState(false);
   const [editingLog, setEditingLog] = useState<WorkLogDto | null>(null);
 
   useEffect(() => {
