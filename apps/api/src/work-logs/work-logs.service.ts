@@ -1,9 +1,11 @@
-import { WorkLogsQueryDto } from '@construction/contracts';
+import type {
+  CreateWorkLogDto,
+  UpdateWorkLogDto,
+  WorkLogsQueryDto,
+} from '@construction/contracts';
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateWorkLogDto } from './dto/create-work-log.dto';
-import { UpdateWorkLogDto } from './dto/update-work-log.dto';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class WorkLogsService {
@@ -34,13 +36,7 @@ export class WorkLogsService {
   }
 
   async create(dto: CreateWorkLogDto) {
-    const workType = await this.prisma.workType.findUnique({
-      where: { id: dto.workTypeId },
-    });
-
-    if (!workType) {
-      throw new BadRequestException('Вид работ не найден');
-    }
+    const workType = await this.getWorkTypeOrThrow(dto.workTypeId);
 
     return this.prisma.workLog.create({
       data: {
@@ -55,20 +51,13 @@ export class WorkLogsService {
   }
 
   async update(id: string, dto: UpdateWorkLogDto) {
-    const existing = await this.prisma.workLog.findUnique({ where: { id } });
+    await this.getWorkLogOrThrow(id);
 
-    if (!existing) {
-      throw new NotFoundException('Запись журнала не найдена');
-    }
+    let unit = dto.unit;
 
     if (dto.workTypeId) {
-      const workType = await this.prisma.workType.findUnique({
-        where: { id: dto.workTypeId },
-      });
-
-      if (!workType) {
-        throw new BadRequestException('Вид работ не найден');
-      }
+      const workType = await this.getWorkTypeOrThrow(dto.workTypeId);
+      unit ??= workType.unit;
     }
 
     return this.prisma.workLog.update({
@@ -77,7 +66,7 @@ export class WorkLogsService {
         workDate: dto.workDate ? new Date(dto.workDate) : undefined,
         workTypeId: dto.workTypeId,
         amount: dto.amount,
-        unit: dto.unit,
+        unit,
         performerName: dto.performerName,
       },
       include: { workType: true },
@@ -85,14 +74,30 @@ export class WorkLogsService {
   }
 
   async remove(id: string) {
-    const existing = await this.prisma.workLog.findUnique({ where: { id } });
-
-    if (!existing) {
-      throw new NotFoundException('Запись журнала не найдена');
-    }
+    await this.getWorkLogOrThrow(id);
 
     await this.prisma.workLog.delete({ where: { id } });
 
     return { success: true };
+  }
+
+  private async getWorkLogOrThrow(id: string) {
+    const workLog = await this.prisma.workLog.findUnique({ where: { id } });
+
+    if (!workLog) {
+      throw new NotFoundException('Запись журнала не найдена');
+    }
+
+    return workLog;
+  }
+
+  private async getWorkTypeOrThrow(id: string) {
+    const workType = await this.prisma.workType.findUnique({ where: { id } });
+
+    if (!workType) {
+      throw new BadRequestException('Вид работ не найден');
+    }
+
+    return workType;
   }
 }
