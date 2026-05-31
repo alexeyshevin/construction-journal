@@ -16,8 +16,8 @@ import {
   Typography,
 } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { WorkLogFormDialog } from './components/WorkLogFormDialog';
-import { WorkLogsTable } from './components/WorkLogsTable';
+import { WorkLogFormDialog } from './components/WorkLogFormDialog/WorkLogFormDialog';
+import { WorkLogsTable } from './components/WorkLogsTable/WorkLogsTable';
 import { useWorkLogsStore } from './store/useWorkLogsStore';
 
 const App = () => {
