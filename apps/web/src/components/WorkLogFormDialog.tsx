@@ -142,6 +142,10 @@ export const WorkLogFormDialog = (props: Props) => {
             label="Единица измерения"
             error={Boolean(errors.unit)}
             helperText={errors.unit?.message}
+            slotProps={{
+              inputLabel: { shrink: true },
+              htmlInput: { readOnly: true },
+            }}
             {...register('unit')}
           />
 
