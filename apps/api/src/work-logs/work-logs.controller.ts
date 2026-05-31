@@ -1,6 +1,19 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
-import { CreateWorkLogDto } from './dto/create-work-log.dto';
-import { UpdateWorkLogDto } from './dto/update-work-log.dto';
+import {
+  CreateWorkLogSchema,
+  UpdateWorkLogSchema,
+  WorkLogsQuerySchema,
+} from '@construction/contracts';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query
+} from '@nestjs/common';
 import { WorkLogsService } from './work-logs.service';
 
 @Controller('work-logs')
@@ -8,22 +21,36 @@ export class WorkLogsController {
   constructor(private readonly workLogsService: WorkLogsService) {}
 
   @Get()
-  findAll(
-    @Query('dateFrom') dateFrom?: string,
-    @Query('dateTo') dateTo?: string,
-    @Query('sort') sort?: 'asc' | 'desc',
-  ) {
-    return this.workLogsService.findAll({ dateFrom, dateTo, sort });
+  findAll(@Query() query: unknown) {
+    const result = WorkLogsQuerySchema.safeParse(query);
+
+    if (!result.success) {
+      throw new BadRequestException(result.error.flatten());
+    }
+
+    return this.workLogsService.findAll(result.data);
   }
 
   @Post()
-  create(@Body() dto: CreateWorkLogDto) {
-    return this.workLogsService.create(dto);
+  create(@Body() body: unknown) {
+    const result = CreateWorkLogSchema.safeParse(body);
+
+    if (!result.success) {
+      throw new BadRequestException(result.error.flatten());
+    }
+
+    return this.workLogsService.create(result.data);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() dto: UpdateWorkLogDto) {
-    return this.workLogsService.update(id, dto);
+  update(@Param('id') id: string, @Body() body: unknown) {
+    const result = UpdateWorkLogSchema.safeParse(body);
+
+    if (!result.success) {
+      throw new BadRequestException(result.error.flatten());
+    }
+
+    return this.workLogsService.update(id, result.data);
   }
 
   @Delete(':id')
